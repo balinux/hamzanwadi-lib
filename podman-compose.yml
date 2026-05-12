@@ -1,0 +1,82 @@
+version: "3.8"
+
+services:
+  # ── PHP-FPM (Laravel App) ──────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: hamzanwadi-lib-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    userns_mode: keep-id
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hamzanwadi-lib-net
+
+  # ── Nginx Web Server ───────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: hamzanwadi-lib-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - hamzanwadi-lib-net
+
+  # ── MariaDB Database ──────────────────────────────────
+  db:
+    image: mariadb:11
+    container_name: hamzanwadi-lib-db
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: rootsecret
+      MARIADB_DATABASE: hamzanwadi-lib
+      MARIADB_USER: hamzanwadi-lib
+      MARIADB_PASSWORD: secret
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - hamzanwadi-lib-net
+
+  # ── Vite Dev Server (HMR) ─────────────────────────────
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: hamzanwadi-lib-node
+    restart: unless-stopped
+    working_dir: /var/www/html
+    userns_mode: keep-id
+    command: ["sh", "-c", "npm install && npm run dev -- --host 0.0.0.0"]
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/var/www/html
+    networks:
+      - hamzanwadi-lib-net
+
+volumes:
+  mariadb_data:
+    driver: local
+
+networks:
+  hamzanwadi-lib-net:
+    driver: bridge
