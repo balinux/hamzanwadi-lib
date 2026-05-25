@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Livewire\Forms;
+
+use App\Models\Category;
+use Illuminate\Validation\Rule;
+use Livewire\Form;
+
+class CategoryForm extends Form
+{
+    public string $name = '';
+    
+    public string $description = '';
+
+    public ?Category $category = null;
+
+    public function rules(): array
+    {
+        return [
+            'name' => [
+                'required',
+                'string',
+                'min:3',
+                'max:255',
+                Rule::unique('categories', 'name')->ignore($this->category?->id),
+            ],
+            'description' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+        ];
+    }
+
+    public function setCategory(Category $category): void
+    {
+        $this->category = $category;
+        $this->name = $category->name;
+        $this->description = $category->description ?? '';
+    }
+
+    public function store()
+    {
+        $this->validate();
+        Category::create($this->only(['name', 'description']));
+        $this->reset();
+    }
+
+    // update
+    public function update()
+    {
+        $this->validate();
+        $this->category->update($this->only(['name', 'description']));
+    }
+}
