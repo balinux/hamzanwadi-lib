@@ -18,6 +18,9 @@
                     <flux:sidebar.item icon="home" :href="route('category.index')" :current="request()->routeIs('category.index')" wire:navigate>
                         {{ __('Category') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="book-open-text" :href="route('book.index')" :current="request()->routeIs('book.index')" wire:navigate>
+                        {{ __('Book') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

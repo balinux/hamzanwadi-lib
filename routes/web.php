@@ -9,6 +9,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::livewire('/categories', 'pages::category.index')
         ->name('category.index');
+
+    Route::livewire('/books', 'pages::book.index')
+        ->name('book.index');
 });
 
 
