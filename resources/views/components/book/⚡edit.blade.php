@@ -6,9 +6,12 @@ use App\Models\Book;
 use App\Models\Category;
 use App\Livewire\Forms\BookForm;
 use Livewire\Attributes\Computed;
+use Livewire\WithFileUploads;
 
 new class extends Component
 {
+    use WithFileUploads;
+    
     public BookForm $form;
 
     #[Computed]
